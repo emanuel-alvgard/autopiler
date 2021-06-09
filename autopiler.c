@@ -13,6 +13,11 @@
 #include <string.h>
 #endif
 
+#ifndef STDARG
+#define STDARG
+#include <stdarg.h>
+#endif
+
 #ifndef WINDOWS
 #define WINDOWS
 #include <windows.h>
@@ -78,6 +83,24 @@ int allocate() {
     // with help from global atomic variables this function keeps track of allocated
     // and logs all allocations and freeing of memory 
     return 0;
+}
+
+
+// STRING
+int string_concatenate(char *result, int count, ...) {
+
+   va_list arguments;
+   va_start(arguments, count);
+
+   int i = 0; 
+   while (1) {
+       if (i == count) {
+           va_end(arguments);
+           return retlog(0, "string_concatenate", INT, &count);
+       }
+       strcat(result, va_arg(arguments, char *));
+       i += 1; 
+   } 
 }
 
 
@@ -155,7 +178,7 @@ int file_delete() { return 0; }
 
 int directory_index(int index, char *path, char *result) {
 
-    char _path[1000];
+    char _path[1000] = "";
     strcpy(_path, path);
     strcat(_path, "/*");    
     WIN32_FIND_DATAA file; 
@@ -196,10 +219,12 @@ void directory_delete(char *path) {}
 
 
 // DEFAULT CONFIGURATION
-char compiler[1000] = "gcc";
+char compiler[1000] = "gcc ";
 char compiler_flags[1000] = "";
 char input_path[1000] = "";
+char input_file[1000] = "";
 char output_path[1000] = "";
+char output_file[1000] = "";
 char run[2] = "y";
 
 
@@ -243,18 +268,17 @@ int compile() {
 
 */
 
-
 int main() {
-
-    strcpy(input_path, "c:/Users/emal/Desktop/autopiler/autopiler.c");
-    char result[64];
-    directory_index(10, "c:/Users/emal/Desktop/distr", result);
-    directory_index(2, "c:/Users/emal/Desktop/distr", result);
-    directory_index(3, "c:/Users/emal/Desktop/distr", result);
-    directory_index(1, "blaah/blaah", result);
-    file_read("hej", result);
-    file_append("hellu", "hello.txt");
-    file_create("this is a new file!", "test.c");
+    printf("Autopiler v.1.0.0\n");
+    string_concatenate(input_path, 2, "c:/Users/emal/Desktop/autopiler", "/");
+    strcat(input_file, "autopiler.c");
+    string_concatenate(output_path, 3, " -o ", "c:/Users/emal/Desktop", "/");
+    strcat(output_file, "Autopiler");
+    char input[1000] = "";
+    string_concatenate(input, 5, compiler, input_path, input_file, output_path, output_file);
+    system(input);
+    printf("%s compiled to %s.exe\n", input_file, output_file);
+   
     //compile();
 
     return 0;
