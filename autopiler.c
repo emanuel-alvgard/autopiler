@@ -86,25 +86,9 @@ int allocate() {
 }
 
 
-// STRING
-int string_concatenate(char *result, int count, ...) {
-
-   va_list arguments;
-   va_start(arguments, count);
-
-   int i = 0; 
-   while (1) {
-       if (i == count) {
-           va_end(arguments);
-           return retlog(0, "string_concatenate", INT, &count);
-       }
-       strcat(result, va_arg(arguments, char *));
-       i += 1; 
-   } 
-}
-
 
 // FILE
+// WRONG!!!
 int file_read(char *path, char *result) {
 
     FILE *file;
@@ -117,8 +101,9 @@ int file_read(char *path, char *result) {
     fseek(file, 0, SEEK_END);
     long length = ftell(file);
     fseek(file, 0, SEEK_SET);
-    result = calloc(length, sizeof(char));
-    fread(result, sizeof(char), length, file);
+    result = calloc(length + 1, sizeof(char));
+    fread(result, sizeof(char), length, file); 
+    //strcpy(result, buffer);
     fclose(file);
 
     return retlog(0, "file_read", STR, path);
@@ -217,18 +202,6 @@ void directory_delete(char *path) {}
 
 
 
-
-// DEFAULT CONFIGURATION
-char compiler[1000] = "gcc ";
-char compiler_flags[1000] = "";
-char input_path[1000] = "";
-char input_file[1000] = "";
-char output_path[1000] = "";
-char output_file[1000] = "";
-char run[2] = "y";
-
-
-
 /*
 int configuration() {
     
@@ -268,18 +241,76 @@ int compile() {
 
 */
 
-int main() {
-    printf("Autopiler v.1.0.0\n");
-    string_concatenate(input_path, 2, "c:/Users/emal/Desktop/autopiler", "/");
-    strcat(input_file, "autopiler.c");
-    string_concatenate(output_path, 3, " -o ", "c:/Users/emal/Desktop", "/");
-    strcat(output_file, "Autopiler");
-    char input[1000] = "";
-    string_concatenate(input, 5, compiler, input_path, input_file, output_path, output_file);
-    system(input);
-    printf("%s compiled to %s.exe\n", input_file, output_file);
-   
-    //compile();
 
+// DEFAULT CONFIGURATION
+char compiler[1000] = "";
+char compiler_flags[1000] = "";
+char input_path[1000] = "";
+char input_file[1000] = "";
+char output_path[1000] = "";
+char output_file[1000] = "";
+char object_files[1000] = "";
+char run[2] = "";
+
+
+
+int main() {
+    
+    printf("Autopiler v.1.0.0\n");
+    // compiler
+    strcat(compiler, "gcc ");
+    
+    // input path
+    strcat(input_path, "c:/Users/emal/Desktop/autopiler");
+    strcat(input_path, "/");
+
+    // input file
+    strcat(input_file, "autopiler.c");
+
+    // output path
+    strcat(output_path, " -o ");
+    strcat(output_path, "c:/Users/emal/Desktop");
+    strcat(output_path, "/");
+
+    // output file
+    strcat(output_file, "Autopiler");
+
+    char result[1000] = "";
+    strcat(result, compiler);
+    strcat(result, input_path);
+    strcat(result, input_file);
+    strcat(result, output_path);
+    strcat(result, output_file);
+
+    char scan_path[1000] = "";
+    strcat(scan_path, input_path);
+    strcat(scan_path, input_file);
+
+    //char current[10000] = "";
+    char *current;
+    file_read(scan_path, current);
+    printf(current);
+    //free(current);
+
+    int i = 0;
+    while (i < 10) {
+        /*
+        char *new = "";
+        file_read(scan_path, new);
+        
+        if (strcmp(current, new) != 0) { 
+            free(current);
+            strcpy(current, new);
+            system(result);
+            printf("%s compiled to %s.exe\n", input_file, output_file);
+        }        
+        free(new);
+        */
+        printf("test"); 
+        Sleep(500);
+        i ++;
+    }
     return 0;
 }
+
+//
