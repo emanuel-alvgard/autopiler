@@ -18,173 +18,244 @@
 #include <windows.h>
 #endif
 
-// make into lite_type.h??
-struct String_1 { char value[32]; } typedef s1;
-struct String_4 { char value[32]; } typedef s4;
-struct String_8 { char value[32]; } typedef s8;
-struct String_16 { char value[32]; } typedef s16;
-struct String_32 { char value[32]; } typedef s32;
-struct String_64 { char value[64]; } typedef s64;
-struct String_128 { char value[128]; } typedef s128;
-struct String_256 { char value[256]; } typedef s256;
-
-struct String_1_KB { char value[1024]; } typedef s1_KB;
-struct String_4_KB { char value[4096]; } typedef s4_KB;
-struct String_8_KB { char value[8192]; } typedef s8_KB;
-struct String_16_KB { char value[16384]; } typedef s16_KB;
-
-struct String_1_MB { char value[1000000]; } typedef s1_MB;
-struct String_4_MB { char value[4000000]; } typedef s4_MB;
-struct String_8_MB { char value[8000000]; } typedef s8_MB;
-struct String_16_MB { char value[16000000]; } typedef s16_MB;
 
 
-#define directory_read_return_type s64
+#define RETURN_LOG
+
+#define INT 0
+#define FLO 1
+#define STR 2
+
+#ifdef RETURN_LOG
+int return_log(int error_code, char *function, int p_type, void *p_pointer) {
+
+    // insert a printf for logging-error
+    
+    char error_message[100] = "";
+    
+     switch (error_code) {
+        case 0:
+            strcpy(error_message, "NORMAL"); break;
+        case 1:
+            strcpy(error_message, "INDEX OUT OF RANGE"); break;
+        case 2:
+            strcpy(error_message, "FILE NOT FOUND"); break;
+        case 3:
+            strcpy(error_message, "INVALID PATH"); break;
+        case 4:
+            strcpy(error_message, "FILE ALREADY EXIST"); break;
+    }  
+    
+    if (p_type == 0) {
+        int *int_pointer = (int *) p_pointer;
+        printf("[return]: %s - %s(%i)\n", error_message, function, *int_pointer);
+        return error_code;
+    }
+    if (p_type == 1) {
+        float *float_pointer = (float *) p_pointer;
+        printf("[return]: %s - %s(%f)\n", error_message, function, *float_pointer);
+        return error_code;
+    }
+    if (p_type == 2) {
+        char *char_pointer = (char *) p_pointer;
+        printf("[return]: %s - %s(%s)\n", error_message, function, char_pointer);
+        return error_code;
+    }     
+}
+
+#define retlog(error_code, function, p_type, p_pointer) return_log(error_code, function, p_type, p_pointer)
+#else
+int return_error_code(int error_code) {
+    return error_code;
+}
+
+#define retlog(error_code, function, p_type, p_pointer) return_error_code(error_code); 
+#endif
+
+
+
+int allocate() {
+    // with help from global atomic variables this function keeps track of allocated
+    // and logs all allocations and freeing of memory 
+    return 0;
+}
 
 
 // FILE
-char *file_read(char *path) { // must be freed by the caller
+int file_read(char *path, char *result) {
 
     FILE *file;
     file = fopen(path, "r");
 
     if (file == NULL) {
-        printf("%s not found!\n", path);
-
-        return "";
+        return retlog(2, "file_read", STR, path);
     }
-    else {
-        fseek(file, 0, SEEK_END);
-        long length = ftell(file);
-        fseek(file, 0, SEEK_SET);
-        char *result = calloc(length, sizeof(char));
-        fread(result, sizeof(char), length, file);
-        fclose(file);
+    
+    fseek(file, 0, SEEK_END);
+    long length = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    result = calloc(length, sizeof(char));
+    fread(result, sizeof(char), length, file);
+    fclose(file);
 
-        return result;
-    }
+    return retlog(0, "file_read", STR, path);
 }
 
 
 
-void file_create(char *data, char *path) {
+int file_create(char *data, char *path) {
 
     FILE *file;
+    file = fopen(path, "r");
+
+    if (file != NULL) {
+        return retlog(4, "file_create", STR, path);
+    }
+
+    fclose(file);
     file = fopen(path, "w");
+
+    if (file == NULL) {
+        return retlog(3, "file_create", STR, path);
+    }
 
     fwrite(data, 1, strlen(data), file);
     fclose(file);
 
-    return;
+    return retlog(0, "file_create", STR, path);
 }
 
 
 
-void file_append(char *data, char *path) {
+int file_append(char *data, char *path) {
 
     FILE *file;
-    file = fopen(path, "a");
+    file = fopen(path, "r");
     
     if (file == NULL) {
-        printf("%s not found!\n", path);
+        return retlog(2, "file_append", STR, path);
     }
-    else {
-        fwrite(data, 1, strlen(data), file);
-        fclose(file);
-    }
-    return;
+    
+    fclose(file);
+    file = fopen(path, "a");
+    fwrite(data, 1, strlen(data), file);
+    fclose(file);
+
+    return retlog(0, "file_append", STR, path);
 }
 
+int file_rename() { return 0; }
 
-
-void file_delete() {}
+int file_delete() { return 0; }
 
 
 
 // DIRECTORY
-directory_read_return_type *directory_read(char *path) { // must be freed by the caller
+#ifdef WINDOWS
 
+int directory_index(int index, char *path, char *result) {
+
+    char _path[1000];
+    strcpy(_path, path);
+    strcat(_path, "/*");    
     WIN32_FIND_DATAA file; 
-    HANDLE first = FindFirstFileA(path, &file);
+    HANDLE first = FindFirstFileA(_path, &file);
 
-    int file_count = 0;
-    
-    while (1) {
-        WINBOOL found = FindNextFileA(first, &file);
-        if (found != 0) { file_count += 1; }
-        else { break; }
+    if (first == INVALID_HANDLE_VALUE) {
+        return retlog(3, "directory_index", STR, path);
     }
 
-    FindClose(&first);
-    directory_read_return_type *result = calloc(file_count, sizeof(directory_read_return_type));
- 
-    first = FindFirstFileA(path, &file);
-    file_count = 0;
-    
+    int count = 0;
     while (1) {
+
         WINBOOL found = FindNextFileA(first, &file);
-        if (found != 0) {
-            file_count += 1;
-            strcpy(result[file_count].value, file.cFileName);
+        count += 1;
+
+        if (found != 0) {}
+        else {
+            return retlog(1, "directory_index", INT, &index);
         }
-        else { break; }
+        if (count == index + 2) { break; }
+        else {}           
     }
-
-    FindClose(&first);
-    return result;
+    strcpy(result, file.cFileName);
+    return retlog(0, "directory_index", INT, &index);
 }
 
-void directory_create(char *directory, char *path) {
+void directory_create(char *directory, char *path) {}
 
-}
 void directory_delete(char *path) {}
 
+#endif
+
+#ifdef POSIXS
+#endif
 
 
 
 
-char input[100] = "";
 
-void start() {
-    printf("Autopiler v.1.0 is running.\n");
-}
+// DEFAULT CONFIGURATION
+char compiler[1000] = "gcc";
+char compiler_flags[1000] = "";
+char input_path[1000] = "";
+char output_path[1000] = "";
+char run[2] = "y";
 
-int help() { 
+
+
+/*
+int configuration() {
+    
+    printf("Autopiler v.1.0.0\n");
+    printf("Please enter configuration (enter '> config' for options):\n");
+
+    while (1) {
+        strcpy(, "");
+        printf("> ");
+        scanf("%s", user_configuration);
+        
+        
+        // try to find file by input path
+    } 
     return 0;
 }
+*/
 
+/*
 int compile() {
+
+    if (strcmp(input, "compile") == 0) {}
+    else { return 1; }
+
+    char result[64];
+    
+    int count = 0;
+    while (1) {
+        directory_index(count, "c:/Users/emal/Desktop/distr", result);
+        count += 1;
+    }
+
+    system("gcc ")
+
     return 0;
 }
 
-int stop() {
-    if (strcmp(input, "stop") == 0) { return 1;}
-    else { return 0; }
-}
-
-void unknown() {
-    printf("Unknown command\n");
-}
-
+*/
 
 
 int main() {
-    
-    start();
 
-    s64 *files = directory_read("c:/Users/emal/Desktop/distr/*");
-    printf("%s", files[5].value);
-    free(files);
+    strcpy(input_path, "c:/Users/emal/Desktop/autopiler/autopiler.c");
+    char result[64];
+    directory_index(10, "c:/Users/emal/Desktop/distr", result);
+    directory_index(2, "c:/Users/emal/Desktop/distr", result);
+    directory_index(3, "c:/Users/emal/Desktop/distr", result);
+    directory_index(1, "blaah/blaah", result);
+    file_read("hej", result);
+    file_append("hellu", "hello.txt");
+    file_create("this is a new file!", "test.c");
+    //compile();
 
-/*
-    while (1) {
-        strcpy(input, "");
-        printf("> ");
-        scanf("%s", input);
-        if (compile() == 1) { continue; }
-        if (stop() == 1) { break; }
-        else { unknown(); }
-    }
-*/       
-    return 1;
+    return 0;
 }
