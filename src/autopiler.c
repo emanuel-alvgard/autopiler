@@ -5,52 +5,12 @@
 
 
 
-
-/*
-int configuration() {
-    
-    printf("Autopiler v.1.0.0\n");
-    printf("Please enter configuration (enter '> config' for options):\n");
-
-    while (1) {
-        strcpy(, "");
-        printf("> ");
-        scanf("%s", user_configuration);
-        
-        
-        // try to find file by input path
-    } 
-    return 0;
-}
-*/
-
-/*
-int compile() {
-
-    if (strcmp(input, "compile") == 0) {}
-    else { return 1; }
-
-    char result[64];
-    
-    int count = 0;
-    while (1) {
-        directory_index(count, "c:/Users/emal/Desktop/distr", result);
-        count += 1;
-    }
-
-    system("gcc ")
-
-    return 0;
-}
-
-*/
-
-
-// DEFAULT CONFIGURATION
+// CONFIG
 char compiler[1000] = "";
 char compiler_flags[1000] = "";
 char input_path[1000] = "";
 char input_file[1000] = "";
+char output_flag[10] = " -o ";
 char output_path[1000] = "";
 char output_file[1000] = "";
 char object_files[1000] = "";
@@ -59,29 +19,24 @@ char run[2] = "";
 int main() {
     
     printf("Autopiler v.1.0.0\n");
+    printf("Please enter input directory path:\n> ");
+    scanf("%s", input_path);
+    printf("Please enter input file name:\n> ");
+    scanf("%s", input_file);
+    printf("Please enter ouput directory path:\n> ");
+    scanf("%s", output_path);
+    printf("Please enter ouput file name:\n> ");
+    scanf("%s", output_file);
 
-    // compiler
     strcat(compiler, "gcc ");
-    
-    // input path
-    strcat(input_path, "c:/Users/emal/Desktop/autopiler");
     strcat(input_path, "/");
-
-    // input file
-    strcat(input_file, "autopiler.c");
-
-    // output path
-    strcat(output_path, " -o ");
-    strcat(output_path, "c:/Users/emal/Desktop");
     strcat(output_path, "/");
-
-    // output file
-    strcat(output_file, "Autopiler");
 
     char result[1000] = "";
     strcat(result, compiler);
     strcat(result, input_path);
     strcat(result, input_file);
+    strcat(result, output_flag);
     strcat(result, output_path);
     strcat(result, output_file);
 
