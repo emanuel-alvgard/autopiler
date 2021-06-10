@@ -23,9 +23,7 @@
 #include <windows.h>
 #endif
 
-
-
-#define RETURN_LOG
+//#define RETURN_LOG
 
 #define INT 0
 #define FLO 1
@@ -34,7 +32,7 @@
 #ifdef RETURN_LOG
 int return_log(int error_code, char *function, int p_type, void *p_pointer) {
 
-    // insert a printf for logging-error
+    // insert a printf for logging-error??
     
     char error_message[100] = "";
     
@@ -88,7 +86,28 @@ int allocate() {
 
 
 // FILE
-// WRONG!!!
+int file_size(char *path, long *result) {
+    
+    FILE *file;
+    file = fopen(path, "r");
+
+    if (file == NULL) {
+        return retlog(2, "file_size", STR, path);
+    }
+
+    fseek(file, 0, 0);
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    memcpy(result, &size, sizeof(long)); 
+    
+    fseek(file, 0, 0);
+    fclose(file);
+
+    return retlog(0, "file_size", STR, path);
+}
+
+
+
 int file_read(char *path, char *result) {
 
     FILE *file;
@@ -98,12 +117,16 @@ int file_read(char *path, char *result) {
         return retlog(2, "file_read", STR, path);
     }
     
+    fseek(file, 0, 0);
     fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    result = calloc(length + 1, sizeof(char));
-    fread(result, sizeof(char), length, file); 
-    //strcpy(result, buffer);
+    long count = ftell(file);
+    
+    fseek(file, 0, 0);
+    char *allocation = (char *) calloc(count, 1);
+    fread(allocation, 1, count, file);
+    strcpy(result, allocation);   
+
+    free(allocation);
     fclose(file);
 
     return retlog(0, "file_read", STR, path);
@@ -252,11 +275,10 @@ char output_file[1000] = "";
 char object_files[1000] = "";
 char run[2] = "";
 
-
-
 int main() {
     
     printf("Autopiler v.1.0.0\n");
+
     // compiler
     strcat(compiler, "gcc ");
     
@@ -286,31 +308,32 @@ int main() {
     strcat(scan_path, input_path);
     strcat(scan_path, input_file);
 
-    //char current[10000] = "";
-    char *current;
+    long input_file_size = 0;
+    file_size(scan_path, &input_file_size);
+    
+    char *current = calloc(input_file_size, 1);
     file_read(scan_path, current);
-    printf(current);
-    //free(current);
+    
+    while (1) {
 
-    int i = 0;
-    while (i < 10) {
-        /*
-        char *new = "";
+        long new_size = 0;
+        file_size(scan_path, &new_size);
+        
+        char *new = calloc(new_size, 1);
         file_read(scan_path, new);
         
         if (strcmp(current, new) != 0) { 
             free(current);
-            strcpy(current, new);
+            current = new;
             system(result);
             printf("%s compiled to %s.exe\n", input_file, output_file);
-        }        
+            Sleep(100);
+            continue;
+        }
         free(new);
-        */
-        printf("test"); 
-        Sleep(500);
-        i ++;
+        Sleep(100);         
     }
     return 0;
 }
 
-//
+
