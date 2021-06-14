@@ -7,13 +7,14 @@
 
 // CONFIG
 char compiler[1000] = "";
-char compiler_flags[1000] = "";
 char input_path[1000] = "";
 char input_file[1000] = "";
 char output_flag[10] = " -o ";
 char output_path[1000] = "";
 char output_file[1000] = "";
 char object_files[1000] = "";
+char library_flag[10] = " -l ";
+char library_files[1000] = "";
 char run[2] = "";
 
 int main() {
@@ -27,6 +28,8 @@ int main() {
     scanf("%s", output_path);
     printf("Please enter ouput file name:\n> ");
     scanf("%s", output_file);
+    printf("Please enter library files:\n> ");
+    scanf("%s", library_files);
 
     strcat(compiler, "gcc ");
     strcat(input_path, "/");
@@ -39,6 +42,8 @@ int main() {
     strcat(result, output_flag);
     strcat(result, output_path);
     strcat(result, output_file);
+    strcat(result, library_flag);
+    strcat(result, library_files);
 
     char scan_path[1000] = "";
     strcat(scan_path, input_path);
