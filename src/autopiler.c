@@ -42,7 +42,7 @@ void config_value(int index, char *content) {
 
     int i1 = 0;
     while (1) {
-        if (content[i0] == '\n' || content[i0] == '\0') { return; }
+        if (content[i0] == '\n' || content[i0] == '\0' || content[i0] == ' ') { return; }
         switch (index) {
             case 0: compiler[i1] = content[i0]; break;
             case 1: linking[i1] = content[i0]; break;

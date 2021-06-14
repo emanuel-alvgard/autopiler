@@ -140,12 +140,10 @@ int directory_index(int index, char *path, char *result) {
         WINBOOL found = FindNextFileA(first, &file);
         count += 1;
 
-        if (found != 0) {}
-        else {
-            return retlog(1, "directory_index", INT, &index);
+        if (found == 0) { 
+            return retlog(1, "directory_index", INT, &index); 
         }
-        if (count == index + 2) { break; }
-        else {}           
+        if (count == index + 2) { break; }          
     }
     strcpy(result, file.cFileName);
     return retlog(0, "directory_index", INT, &index);
