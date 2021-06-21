@@ -18,10 +18,7 @@
 #include <string.h>
 #endif
 
-#ifndef WINDOWS
-#define WINDOWS
-#include <windows.h>
-#endif
+
 
 // FILE
 int file_size(char *path, long *result) {
@@ -120,7 +117,7 @@ int file_delete() { return 0; }
 
 
 // DIRECTORY
-#ifdef WINDOWS
+#ifdef LITE_WINDOWS
 
 int directory_index(int index, char *path, char *result) {
 
@@ -155,5 +152,5 @@ void directory_delete(char *path) {}
 
 #endif
 
-#ifdef POSIXS
+#ifdef LITE_POSIXS
 #endif
